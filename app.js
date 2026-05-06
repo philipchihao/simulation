@@ -198,22 +198,33 @@ function equilibrium(market = marketForDay()) {
   };
 }
 
-function seededNoise(day, selectedPriceCents, quantity) {
-  const seed = Math.sin(day * 91.7 + selectedPriceCents * 0.233 + quantity * 0.61) * 10000;
+function priceSupplyAdjustment(priceDollars, market = marketForDay()) {
+  return supplyAt(priceDollars, market) - supplyAt(5, market);
+}
+
+function effectiveBakedSupply(planned, priceDollars, market = marketForDay()) {
+  return clamp(planned + priceSupplyAdjustment(priceDollars, market), 0, state.capacity);
+}
+
+function availableSupplyForDecision(planned, priceDollars, market = marketForDay()) {
+  return clamp(effectiveBakedSupply(planned, priceDollars, market) + state.inventory, 0, 200);
+}
+
+function seededNoise(...parts) {
+  const seed = Math.sin(parts.reduce((total, part, index) => total + Number(part) * (91.7 + index * 37.3), 0)) * 10000;
   return seed - Math.floor(seed);
 }
 
 function calculateDay(selectedPriceCents, planned) {
   const market = marketForDay();
   const priceDollars = dollarsFromCents(selectedPriceCents);
-  const noise = seededNoise(state.day, selectedPriceCents, planned);
-  const demandNoise = Math.round((noise - 0.5) * 18);
-  const supplyNoise = Math.round((0.5 - noise) * 10);
+  const demandNoise = Math.round((seededNoise(state.day, selectedPriceCents, 19) - 0.5) * 18);
+  const supplyNoise = Math.round((0.5 - seededNoise(state.day, selectedPriceCents, planned, 47)) * 10);
   const expectedDemand = demandAt(priceDollars, market);
-  const expectedSupply = supplyAt(priceDollars, market);
+  const expectedSupply = effectiveBakedSupply(planned, priceDollars, market);
   const customers = clamp(Math.round(expectedDemand + demandNoise), 0, 200);
   const marketSupply = clamp(Math.round(expectedSupply + supplyNoise), 0, state.capacity);
-  const baked = Math.min(planned, marketSupply, state.capacity);
+  const baked = marketSupply;
   const available = baked + state.inventory;
   const sold = Math.min(customers, available);
   const surplus = available - sold;
@@ -274,13 +285,14 @@ function drawMarket() {
   const pad = { left: 54, right: 20, top: 22, bottom: 45 };
   const chartW = width - pad.left - pad.right;
   const chartH = height - pad.top - pad.bottom;
-  const qMax = 180;
+  const qMax = 200;
   const pMin = 0;
   const pMax = 11;
   const market = marketForDay();
   const selectedPriceDollars = dollarsFromCents(priceCents());
+  const plannedSupply = Number(els.quantityRange.value);
   const chosenDemand = demandAt(selectedPriceDollars, market);
-  const chosenSupply = supplyAt(selectedPriceDollars, market);
+  const chosenSupply = availableSupplyForDecision(plannedSupply, selectedPriceDollars, market);
   const eq = equilibrium(market);
 
   const x = quantity => pad.left + (quantity / qMax) * chartW;
@@ -343,7 +355,7 @@ function drawMarket() {
   ctx.setLineDash([]);
 
   drawPoint(x(chosenDemand), y(selectedPriceDollars), "#356fa8", compact ? "Demand" : "Demand at your price");
-  drawPoint(x(chosenSupply), y(selectedPriceDollars), "#c86f50", compact ? "Supply" : "Supply at your price");
+  drawPoint(x(chosenSupply), y(selectedPriceDollars), "#c86f50", compact ? "Supply" : "Effective supply");
   drawPoint(x(eq.quantity), y(eq.price), "#d59f30", "Equilibrium");
 
   els.equilibriumStat.textContent = `Equilibrium: $${eq.price.toFixed(2)} / ${eq.quantity.toFixed(1)} loaves`;
@@ -388,7 +400,7 @@ function renderBalanceScale() {
   const demand = demandAt(selectedPriceDollars, market);
   const plannedSupply = Number(els.quantityRange.value);
   const demandRounded = Math.round(demand);
-  const supplyRounded = plannedSupply;
+  const supplyRounded = Math.round(availableSupplyForDecision(plannedSupply, selectedPriceDollars, market));
   const gap = demandRounded - supplyRounded;
   const rotation = clamp(-gap / 6, -10, 10);
 
@@ -402,9 +414,9 @@ function renderBalanceScale() {
   if (Math.abs(gap) <= 8) {
     els.balanceMessage.textContent = "Demand and supply are close.";
   } else if (gap > 0) {
-    els.balanceMessage.textContent = "Demand is heavier than prepared bread.";
+    els.balanceMessage.textContent = "Demand is heavier than supply.";
   } else {
-    els.balanceMessage.textContent = "Prepared bread is heavier than demand.";
+    els.balanceMessage.textContent = "Supply is heavier than demand.";
   }
 }
 
