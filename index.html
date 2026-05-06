@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Market Baker Simulation</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="topbar" aria-label="Bakery status">
+        <div>
+          <p class="eyebrow">Market Baker</p>
+          <h1>Bakery Business Challenge</h1>
+        </div>
+        <div class="day-pill" id="dayPill">Day 1 / 10</div>
+      </section>
+
+      <section class="dashboard" aria-label="Game dashboard">
+        <article class="metric">
+          <span>Cash</span>
+          <strong id="cashMetric">$500.00</strong>
+        </article>
+        <article class="metric">
+          <span>Inventory</span>
+          <strong id="inventoryMetric">0 loaves</strong>
+        </article>
+        <article class="metric">
+          <span>Total Profit</span>
+          <strong id="profitMetric">$0.00</strong>
+        </article>
+        <article class="metric">
+          <span>Market Mood</span>
+          <strong id="moodMetric">Steady</strong>
+        </article>
+      </section>
+
+      <section class="game-grid">
+        <section class="panel market-panel" aria-label="Supply and demand balance">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Economic Framework</p>
+              <h2>Supply and Demand Balance</h2>
+            </div>
+            <div class="legend" aria-label="Market legend">
+              <span><i class="demand-dot"></i>Demand</span>
+              <span><i class="supply-dot"></i>Supply</span>
+            </div>
+          </div>
+
+          <div class="balance-stage">
+            <div class="scale-copy">
+              <p class="eyebrow">Live Market Balance</p>
+              <h3 id="balanceMessage">Demand and supply are close.</h3>
+            </div>
+
+            <div class="scale" aria-label="Balance scale comparing demand and supply">
+              <div class="scale-beam" id="scaleBeam">
+                <div class="pan pan-demand">
+                  <span>Demand</span>
+                  <strong id="demandCount">78</strong>
+                  <div class="loaf-stack" id="demandLoaves" aria-hidden="true"></div>
+                </div>
+                <div class="pan pan-supply">
+                  <span>Prepared</span>
+                  <strong id="supplyCount">111</strong>
+                  <div class="loaf-stack" id="supplyLoaves" aria-hidden="true"></div>
+                </div>
+              </div>
+              <div class="scale-post"></div>
+              <div class="scale-base"></div>
+            </div>
+          </div>
+        </section>
+
+        <aside class="panel controls-panel" aria-label="Daily decisions">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Decision Counter</p>
+              <h2 id="decisionTitle">Set Day 1 Plan</h2>
+            </div>
+          </div>
+
+          <div class="control-block">
+            <label for="priceRange">Selling price</label>
+            <div class="value-row">
+              <input id="priceRange" type="range" min="2" max="10" step="0.25" value="5" />
+              <output id="priceOutput" for="priceRange">$5.00</output>
+            </div>
+          </div>
+
+          <div class="control-block">
+            <label for="quantityRange">Loaves to prepare</label>
+            <div class="value-row">
+              <input id="quantityRange" type="range" min="20" max="160" step="5" value="80" />
+              <output id="quantityOutput" for="quantityRange">80</output>
+            </div>
+          </div>
+
+          <div class="market-signals">
+            <div>
+              <span>Forecast weather</span>
+              <strong id="weatherSignal">Mild morning</strong>
+            </div>
+            <div>
+              <span>Materials / loaf</span>
+              <strong id="costSignal">$1.12</strong>
+            </div>
+            <div>
+              <span>Electricity</span>
+              <strong id="electricitySignal">$3.50 + $0.09/loaf</strong>
+            </div>
+            <div>
+              <span>Daily labor</span>
+              <strong id="laborSignal">$18.00</strong>
+            </div>
+            <div>
+              <span>Capacity</span>
+              <strong id="capacitySignal">110 loaves</strong>
+            </div>
+          </div>
+
+          <article class="news-strip" aria-label="Market news">
+            <p class="eyebrow">News Card</p>
+            <h3 id="newsTitle">Quiet Market Morning</h3>
+            <p id="newsBody">No major news yet. Watch the curve and choose a price that balances volume with margin.</p>
+          </article>
+
+          <button class="primary-action" id="bakeButton" type="button">Bake and Open Shop</button>
+          <button class="secondary-action" id="restartButton" type="button">Restart Challenge</button>
+        </aside>
+      </section>
+
+      <section class="lower-grid">
+        <section class="panel" aria-label="Daily market report">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Market Feedback</p>
+              <h2>Daily Report</h2>
+            </div>
+          </div>
+          <div class="feedback-layout">
+            <div class="report" id="report">
+              <p>Choose your price and production quantity, then open the shop for Day 1.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel curve-panel" aria-label="Supply and demand curve">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Curve View</p>
+              <h2>Supply and Demand</h2>
+            </div>
+          </div>
+          <canvas id="marketCanvas" width="360" height="250" aria-label="Supply and demand chart"></canvas>
+          <div class="curve-stats">
+            <span id="equilibriumStat">Equilibrium: $4.80 / 78 loaves</span>
+            <span id="chosenPointStat">Your price: $5.00</span>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
