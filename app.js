@@ -198,12 +198,8 @@ function equilibrium(market = marketForDay()) {
   };
 }
 
-function priceSupplyAdjustment(priceDollars, market = marketForDay()) {
-  return supplyAt(priceDollars, market) - supplyAt(5, market);
-}
-
 function effectiveBakedSupply(planned, priceDollars, market = marketForDay()) {
-  return clamp(planned + priceSupplyAdjustment(priceDollars, market), 0, state.capacity);
+  return Math.min(planned, supplyAt(priceDollars, market), state.capacity);
 }
 
 function availableSupplyForDecision(planned, priceDollars, market = marketForDay()) {
@@ -219,11 +215,11 @@ function calculateDay(selectedPriceCents, planned) {
   const market = marketForDay();
   const priceDollars = dollarsFromCents(selectedPriceCents);
   const demandNoise = Math.round((seededNoise(state.day, selectedPriceCents, 19) - 0.5) * 18);
-  const supplyNoise = Math.round((0.5 - seededNoise(state.day, selectedPriceCents, planned, 47)) * 10);
+  const supplyNoise = 0;
   const expectedDemand = demandAt(priceDollars, market);
   const expectedSupply = effectiveBakedSupply(planned, priceDollars, market);
   const customers = clamp(Math.round(expectedDemand + demandNoise), 0, 200);
-  const marketSupply = clamp(Math.round(expectedSupply + supplyNoise), 0, state.capacity);
+  const marketSupply = Math.round(expectedSupply);
   const baked = marketSupply;
   const available = baked + state.inventory;
   const sold = Math.min(customers, available);
